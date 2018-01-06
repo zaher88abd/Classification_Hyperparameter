@@ -1,23 +1,38 @@
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
 
 class Classifier:
-    def __init__(self, test_size, c, gamma):
+    def __init__(self, test_size, shuffle):
         data = load_iris().data
         target = load_iris().target
         self.target_name = load_iris().target_names
         self.target_name = np.concatenate((self.target_name, ["wrong_class"]))
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(data, target, test_size=test_size)
-        self.model = SVC(C=c, gamma=gamma, kernel="poly")
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(data, target, test_size=test_size,
+                                                                                shuffle=shuffle)
+        self.models = [SVC(), MLPClassifier(max_iter=250, solver='sgd', batch_size=min(15, len(data))),
+                       DecisionTreeClassifier(), GaussianNB(), LogisticRegression()]
+        self.models_names = ["SVC", "MLPClassifier", "DecisionTreeClassifier", "GaussianNB", "LogisticRegression"]
+        self.models_accuracy = []
 
     def fit_predict(self):
-        self.model = self.model.fit(self.X_train, self.y_train)
-        self.predicted_class = self.model.predict(self.X_test)
+        for model in self.models:
+            model = model.fit(self.X_train, self.y_train)
+            self.models_accuracy.append(accuracy_score(self.y_test, model.predict(self.X_test)))
+
+    def print_accuracy(self):
+        self.fit_predict()
+        for i in range(len(self.models)):
+            print(self.models_names[i], ": ", self.models_accuracy[i])
 
     def plot(self):
         colors = ['b', 'c', 'y', 'm']
@@ -46,6 +61,5 @@ class Classifier:
 
 
 if __name__ == '__main__':
-    classifier = Classifier(test_size=0.75, c=2 ** -15, gamma=0.01)
-    classifier.fit_predict()
-    classifier.plot()
+    classifier = Classifier(test_size=0.750, shuffle=True)
+    classifier.print_accuracy()
