@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
+import sys
 
 
 class Classifier:
@@ -61,5 +62,12 @@ class Classifier:
 
 
 if __name__ == '__main__':
-    classifier = Classifier(test_size=0.750, shuffle=True)
+    test_size, is_suffle = sys.argv[1:]
+    test_size = float(test_size)
+    if is_suffle == 'true':
+        is_suffle = True
+    else:
+        is_suffle = False
+
+    classifier = Classifier(test_size=test_size, shuffle=is_suffle)
     classifier.print_accuracy()
